@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7d6a1f87-8b43-40bc-bcd7-c63e19eab901" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="349fdeb9-511c-41b0-8ace-a769bb0b235f" >
+		<http:request-connection host="appl-diy-five-speriyala.us-e2.cloudhub.io" port="80" connectionIdleTimeout="3000000"/>
+	</http:request-config>
+	<flow name="diy_6Flow" doc:id="2c33607f-11aa-4ea4-964e-37882dc6d477" >
+		<http:listener doc:name="GET /Accounts-name" doc:id="6715931e-629f-4968-b24f-1e205abb124c" config-ref="HTTP_Listener_config" path="/accounts-name">
+		</http:listener>
+		<logger level="INFO" doc:name="logger start" doc:id="4da9c29d-c6b8-4550-b26b-383903f614a8" />
+		<logger level="INFO" doc:name="Logger" doc:id="d9ccad87-312c-4959-afbf-aecae00901ca" message="Logger"/>
+		<set-variable value="#[attributes.headers.user_id]" doc:name="userId" doc:id="558d0a80-5265-4082-985d-64a35edaa9e4" variableName="userId"/>
+		<set-variable value="#[attributes.queryParams.account_name]" doc:name="custName" doc:id="50c696b8-1288-4d0e-8328-a3408be1c67d" variableName="custName"/>
+		<http:request method="GET" doc:name="Request" doc:id="dad2f746-da42-47cd-b2c2-8e05c89c8c5f" config-ref="HTTP_Request_configuration" path="/accounts">
+			<http:headers ><![CDATA[#[{
+	user_id: attributes.headers.user_id,
+	client_secret : "92503fB32BA14FBCb9f4318a0f65E1E8",
+	client_id : "6c42ba05d88c4b59a9d869a5011b2d76"
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	account_name : vars.custName
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="d8405ddd-110f-4282-9011-97e85af5aae5">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+payload: payload filter($.name == vars.custName),
+size: sizeOf(payload),
+cust_name: vars.custName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f9799a8e-0ca6-4083-85a9-79c9057913e5" message="succesful"/>
+	</flow>
+	<flow name="accounts-by-type" doc:id="82aa0107-5f3b-428a-8cc2-52aa8913b503" >
+		<http:listener doc:name="GET /Accounts-type" doc:id="46efda5d-3d67-4b10-9ef9-fc0ae613feea" config-ref="HTTP_Listener_config" path="/accounts-type" />
+		<logger level="INFO" doc:name="logger start" doc:id="48946644-50ce-460b-8976-749f0268ec62" />
+		<logger level="INFO" doc:name="Logger" doc:id="3b4ab246-879c-4c83-a81a-02301996ff15" message="Logger" />
+		<set-variable value="#[attributes.headers.user_id]" doc:name="userId" doc:id="5c35fddc-261e-4c8c-a4f5-730a3d2e8176" variableName="userId" />
+		<set-variable value="#[attributes.queryParams.account_type]" doc:name="custType" doc:id="e32837d6-294a-4889-bb19-7be2a789e5cd" variableName="custType" />
+		<http:request method="GET" doc:name="Request" doc:id="2127a8bb-d503-4bd0-af57-c1e4ca1f0f17" config-ref="HTTP_Request_configuration" path="/accounts" >
+			<http:headers ><![CDATA[#[{
+	user_id: attributes.headers.user_id,
+	client_secret : "92503fB32BA14FBCb9f4318a0f65E1E8",
+	client_id : "6c42ba05d88c4b59a9d869a5011b2d76"
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	account_type : vars.custType
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="e3f6b342-f203-4e58-8209-c1cbff32a8e6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+payload: payload filter($."type" == vars.custType),
+size: sizeOf(payload),
+cust_type: vars.custType
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger1" doc:id="aa99ad46-3ce0-4e3e-a288-d43cdfcc3210" message="succesful" />
+	</flow>
+</mule>

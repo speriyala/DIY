@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="accounts-api-3-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="accounts-api-3-config" api="resource::7702c50d-7d80-4246-976f-2eebdbf9ef66:accounts_api:1.0.1:raml:zip:accounts-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="accounts-api-3-main">
+        <http:listener config-ref="accounts-api-3-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="accounts-api-3-config" />
+        <error-handler ref="Main_Error_Handler">
+           
+           <!-- on error propagate of bad req removed by Shyam for testing -->
+           
+           
+        </error-handler>
+    </flow>
+    <flow name="accounts-api-3-console">
+        <http:listener config-ref="accounts-api-3-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="accounts-api-3-config" />
+		<error-handler ref="Console_Error_Handler" />
+    </flow>
+	<flow name="get:\accounts:accounts-api-3-config">
+		<flow-ref doc:name="getAccountsFlow" doc:id="a8a4f218-d42e-46f9-ac7b-bd7646a212c7" name="getAccounts"/>
+    </flow>
+    <flow name="get:\accounts\(ID):accounts-api-3-config">
+		<flow-ref doc:name="get-accounts-byidFlow" doc:id="7b217c0a-c4f9-406a-bfe7-1ffe603d3e06" name="get-accountsbyid-db"/>
+		<error-handler ref="Flow_Error_Handler_DB_ID" />
+    </flow>
+    <flow name="post:\accounts:application\json:accounts-api-3-config">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Accounts created"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>

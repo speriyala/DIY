@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="b436ceea-6770-4234-bb25-a47ff4059822" >
+		<wsc:connection wsdlLocation="${accounts-wsdl.wsdl}" service="${accounts-wsdl.service}" port="${accounts-wsdl.port}" address="${accounts-wsdl.address}" />
+	</wsc:config>
+	<flow name="transactionFlow" doc:id="e52908a4-f44a-41f2-a1b8-8dd7dcc1d66d" >
+		<http:listener doc:name="Listener" doc:id="583848ea-d9b2-41e8-a13a-104a6a295eed" config-ref="HTTP_Listener_config" path="/accounts/{id}/transactions"/>
+		<set-variable doc:name="userId" doc:id="f2909fe4-cabc-4e60-b18f-a687548983f6" variableName="userId" value="#[attributes.headers.user_id]"/>
+		<set-variable value="#[attributes.uriParams.id]" doc:name="accountId" doc:id="e489ffc5-e1a8-49cb-936c-223ea4fcfd1f" variableName="accountId"/>
+		<ee:transform doc:name="account_id" doc:id="98160e02-b66d-4139-bd07-8f1ddaf97b4d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://training.mulesoft.com/
+---
+{
+	ns0#GetTransactionsforCustomers: {
+		customerID: vars.accountId as String
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume doc:name="Consume" doc:id="a4f80de9-3eac-434a-83d1-4fcc0840ddd5" config-ref="Web_Service_Consumer_Config" operation="GetTransactionsforCustomers"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f97da2c6-e4f1-4879-a791-7316ca87c35d" message="#[payload]" />
+		<set-variable value="#[sizeOf(payload..*transaction)]" doc:name="transactionNumber" doc:id="062437f2-6cb6-4138-8064-639000d5c4f5" variableName="transactionNumber"/>
+		<ee:transform doc:name="Transform Message" doc:id="2bd0d55b-4efa-4e8a-987d-3a01b68c99db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+
+payload.body mapObject(value,object,index) ->
+{
+   transactions :  (value.*transaction),
+   sum_amount : (sum(value..*amount default []) )
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

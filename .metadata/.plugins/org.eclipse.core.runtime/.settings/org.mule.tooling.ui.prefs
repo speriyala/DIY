@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+prompt=always
+server_already_running_inform=PROMPT
+studio.perspective.switch.project.api=always
+studio.perspective.switch.project.mule=always
+tooling_ui_preference_current_ui_plugin_version=7.14.0.202210251126

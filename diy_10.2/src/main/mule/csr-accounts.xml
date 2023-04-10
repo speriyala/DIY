@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:accounts-api="http://www.mulesoft.org/schema/mule/accounts-api"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/accounts-api http://www.mulesoft.org/schema/mule/accounts-api/current/mule-accounts-api.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+
+<!-- this is the place of removal of the listener,request and config data -->
+
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="a09148a1-047c-47df-b881-3d157dad9b58"/>
+	<flow name="accounts-by-name" doc:id="04c0fa3c-ff19-44f6-8222-15c96b03650e">
+		<http:listener doc:name="GET /Accounts-name" doc:id="967a5257-ce2d-4d7b-b73c-d4a7fff8ea18" config-ref="HTTP_Listener_config" path="/accounts-name">
+			<http:error-response statusCode="#[vars.httpStatus]" reasonPhrase='#["Bad Request"]'>
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+
+		</http:listener>
+		<logger level="INFO" doc:name="logger start" doc:id="85a20b92-59e9-4895-b990-430ea01205fe" />
+		<logger level="INFO" doc:name="Logger" doc:id="e04152e4-87f5-47f8-9a04-0152be186d92" message="Logger" />
+		<flow-ref doc:name="Flow Reference" doc:id="fbef66b0-a485-4d9e-9479-295455b984fc" name="variablesData"/>
+		<choice doc:name="Choice" doc:id="bf938160-b9ba-4752-8986-c483e76427e8" >
+			<when expression='#[vars.condition == "AND"]'>
+				<accounts-api:get-accounts doc:name="Get accounts" doc:id="92314ed8-6e12-43e7-a5ea-d38d9bf5f5f1" config-ref="Accounts_API_Config" user-id="#[vars.userId]" client-id="${accounts.client_id}" client-secret="${accounts.client_secret}" account-name="#[vars.custName]" account-type="#[vars.custType]" />
+			</when>
+			<otherwise >
+				<flow-ref doc:name="OrCondition" doc:id="1dc1511e-b264-4d5f-ac29-01444594e37b" name="or-condition"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="8893fdbe-39de-425d-8244-4723a7720719">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+payload: payload,
+size: sizeOf(payload),
+cust_name: vars.custName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="00499183-6139-4bcd-8317-c62b5d8523c6" message="succesful" />
+		<error-handler ref="main-error-handler" />
+	
+</flow>
+	<sub-flow name="variablesData" doc:id="26b5517f-92c6-4962-b5de-8cb03776f7cd" >
+		<set-variable value="#[attributes.headers.user_id]" doc:name="userId" doc:id="af0d7027-cacd-4f1f-ac74-22d24b789ec0" variableName="userId" />
+		<set-variable value="#[attributes.queryParams.account_name]" doc:name="custName" doc:id="7d714880-d84a-4caa-92d6-c285f66dfef6" variableName="custName" />
+		<set-variable value='#[attributes.queryParams.account_type default "business"]' doc:name="custType" doc:id="6c868fde-1c63-468a-b267-1211e4c0c114" variableName="custType" />
+		<validation:is-true doc:name="Is true Account Type" doc:id="f00f13b9-f51a-4bb4-8c68-5fa3280b17d4" config-ref="Validation_Config" expression='#[(attributes.queryParams.account_type == "business") or  (attributes.queryParams.account_type == "personal")]'>
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:ACCOUNT_TYPE" />
+		</validation:is-true>
+		<validation:is-true doc:name="Is true AND OR condition" doc:id="9f1411d1-4efa-446e-aae5-f48aead9c06e" config-ref="Validation_Config" expression='#[(attributes.queryParams.condition == "AND") or (attributes.queryParams.condition == "OR") ]'>
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:CONDITION" />
+		</validation:is-true>
+		<choice doc:name="Choice" doc:id="a749f96c-6d73-49e3-a263-e586c7036f75" >
+			<when expression='#[attributes.queryParams.condition == "OR" and  attributes.queryParams.account_name != null]'>
+				<set-variable value='#["OR"]' doc:name="condition" doc:id="e652fb93-8c6e-4872-958f-3ac138682de6" variableName="condition" />
+			</when>
+			<when expression='#[attributes.queryParams.condition == "OR" and   attributes.queryParams.account_name == null]'>
+				<set-variable value='#["AND"]' doc:name="condition" doc:id="d742ed6e-70eb-46fa-aeac-cf68b72b2717" variableName="condition" />
+			</when>
+			<otherwise >
+				<set-variable value='#["AND"]' doc:name="condition" doc:id="f9e39fa4-1c50-4ec7-9b35-ddb71750c0bd" variableName="condition" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="or-condition" doc:id="7c2a3d71-e650-42e0-ba0d-64ac0d1154b7">
+		<scatter-gather doc:name="Scatter-Gather" doc:id="986ea59f-bd8a-4e20-83bc-ca2941eece45">
+			<route>
+				<accounts-api:get-accounts doc:name="GetaccountsbyType" doc:id="c3b9c8a0-6c56-4493-bd0c-7acbcbfdf3d7" config-ref="Accounts_API_Config" user-id="#[vars.userId]" client-id="${accounts.client_id}" client-secret="${accounts.client_secret}" account-type="#[vars.custType]" />
+			</route>
+			<route>
+				<accounts-api:get-accounts doc:name="GetaccountsByName" doc:id="8c8a1641-914c-4a77-8251-a515ff088667" config-ref="Accounts_API_Config" user-id="#[vars.userId]" client-id="${accounts.client_id}" client-secret="${accounts.client_secret}" account-name="#[vars.custName]" />
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="0381900d-0889-42d6-9b2b-5d780be6ed13">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+flatten(payload..*payload)
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<flow name="postAccountsFirst" doc:id="61285e60-d6f9-4b57-9cc9-553b382d9858">
+		<http:listener doc:name="Listener" doc:id="570ac1a9-2b8f-471c-b1f8-74e5ea65b87b" config-ref="HTTP_Listener_config" path="/accounts-postfirst" />
+		<logger level="INFO" doc:name="flowBegin" doc:id="d6c58545-e304-447d-9738-0108aae261c9" message="flowBegin"/>
+		<flow-ref doc:name="asychSubflow" doc:id="dd954881-c201-43de-8197-9e87bc650686" name="asychSubflow" />
+		<accounts-api:create-account doc:name="Create account" doc:id="44e141e3-b075-4d97-b5a0-5c5c79a9c026" config-ref="Accounts_API_Config" user-id="4408" client-id="${accounts-postfirst.client_id}" client-secret="${accounts-postfirst.client_secret}"/>
+		<ee:transform doc:name="Transform Message" doc:id="cff6c979-94a5-46af-b002-bfd267121c40">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+"message": "Accounts submitted",
+"recordsSubmitted" :vars.payloadData,
+"userId" : vars.userID,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="flowEnd" doc:id="1efe360f-e160-4ec8-8a6b-e3faecc00f20" message="flowEnd"/>
+	</flow>
+	<flow name="PostAccounts" doc:id="7f786f52-679c-44b2-a662-95aabec2e63c" >
+		<http:listener doc:name="POST /accounts" doc:id="6fee2dae-021c-41f5-ad6d-9e09e3b4f1e5" config-ref="HTTP_Listener_config" path="/accounts" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="firstLogMessage" doc:id="dff07870-1a7d-461d-a5db-f1431a1599c6" message="firstLogMessage" />
+		<flow-ref doc:name="asychSubflow" doc:id="d7cb4147-8476-4f3d-9c58-ee857cc046f4" name="asychSubflow"/>
+		<vm:publish doc:name="Publish" doc:id="e9fdbdd8-f333-4619-8adc-a9c66a957c69" config-ref="VM_Config" queueName="requestQueue"/>
+		<ee:transform doc:name="Transform Message" doc:id="b68a11b6-ca3a-490f-b723-e50f1a634494">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"userId" : vars.userID,
+	"accounts" : payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="end logger" doc:id="851e9032-6206-4828-8f1b-07e69ee527ec" message="end logger"/>
+	</flow>
+	<flow name="requestQueue" doc:id="eb55cc85-b788-4b12-9987-d016d6791783" >
+		<vm:listener queueName="requestQueue" doc:name="Listener" doc:id="b25ee0aa-a529-48dd-b4dc-1dda2d294536" config-ref="VM_Config"/>
+		<flow-ref doc:name="asychSubflow" doc:id="6ac0d525-c4c7-4914-9bb2-16e250ea7d46" name="asychSubflow" />
+		<accounts-api:create-account doc:name="Create account" doc:id="f168411c-c8ce-4d18-8d6b-681e5b96abf8" config-ref="Accounts_API_Config" user-id="4408" client-id="${accounts-postfirst.client_id}" client-secret="${accounts-postfirst.client_secret}" />
+		<logger level="INFO" doc:name="vmEndlogger" doc:id="d219f768-4b65-4640-8e53-b3ffc5e2eb1e" message="vmEndlogger"/>
+	</flow>
+	<sub-flow name="asychSubflow" doc:id="9201cd45-6741-4750-bd91-c1906e8904f5" >
+		<set-variable value="#[attributes.headers.user_Id]" doc:name="userID" doc:id="3bf72c26-9822-4dbb-9d6a-cf178b46e3cb" variableName="userID" />
+		<set-variable value="#[sizeOf(payload)]" doc:name="payloadData" doc:id="3b94cbcb-e423-42a2-98ab-c4090e60196e" variableName="payloadData" />
+	</sub-flow>
+	
+	
+	 
+</mule>

@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_26b5517f_92c6_4962_b5de_8cb03776f7cd_Output_Variables_custType = "business" | "personal"
+

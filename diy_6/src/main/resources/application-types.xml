@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="payload_fields" format="json">
+      <types:shape format="weave" example="examples/payload_sample.json"><![CDATA[%dw 2.0
+
+type payload_fields = Array<{|  id: Number {"typeId": "int"},   name: String,   "type": String,   address: String,   air_miles: Number {"typeId": "int"},   created_at: String|}> {"example": "[{\\\"id\\\":4400,\\\"name\\\":\\\"Mat Siva\\\",\\\"type\\\":\\\"business\\\",\\\"address\\\":\\\"12345 Green,Boulder,Colorado,82433,USA\\\",\\\"air_miles\\\":119093,\\\"created_at\\\":\\\"2017-10-21T22:54:36\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="result_json" format="json">
+      <types:shape format="weave" example="examples/result_transform-4.json"><![CDATA[%dw 2.0
+
+type result_json = Array<{|  id: Number {"typeId": "int"},   name: String,   "type": String,   address: String,   air_miles: Number {"typeId": "int"},   created_at: String,   user_id: Number {"typeId": "int"},   cust_name: String|}> {"example": "[{\\\"id\\\":4400,\\\"name\\\":\\\"Mat Siva\\\",\\\"type\\\":\\\"business\\\",\\\"address\\\":\\\"12345 Green,Boulder,Colorado,82433,USA\\\",\\\"air_miles\\\":119093,\\\"created_at\\\":\\\"2017-10-21T22:54:36\\\",\\\"user_id\\\":4400,\\\"cust_name\\\":\\\"shyam\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="user_id" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#d8405ddd-110f-4282-9011-97e85af5aae5"/>
+</types:mule>

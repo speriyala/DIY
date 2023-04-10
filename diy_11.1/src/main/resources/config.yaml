@@ -1,0 +1,32 @@
+# listener details
+http:
+  port: "8081"
+
+# post request details 2,3 points of DIY 7.1,  observed that they are automatically applied to get request 
+ 
+accounts-postfirst:
+  host: "appl-diy-five-speriyala.us-e2.cloudhub.io"
+  port: "80"
+  basepath: "/"
+  protocol: "HTTP"
+  client_id: "6c42ba05d88c4b59a9d869a5011b2d76"
+  client_secret: "92503fB32BA14FBCb9f4318a0f65E1E8"
+  
+#connection string for 8.1 DIY
+accounts:
+  host: "appl-diy-five-speriyala.us-e2.cloudhub.io"
+  port: "80"
+  basepath: "/"
+  protocol: "HTTP"
+  client_id: "6c42ba05d88c4b59a9d869a5011b2d76"
+  client_secret: "92503fB32BA14FBCb9f4318a0f65E1E8" 
+  
+#WSDL config 
+
+accounts-wsdl:
+  wsdl: "http://apdev-accounts-ws.cloudhub.io/api/transactions?wsdl"
+  service: "TransactionServiceService"
+  port: "TransactionServicePort"
+  address: "http://apdev-accounts-ws.cloudhub.io/api/transactions"
+
+ 

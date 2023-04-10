@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/AccountType",
+  "definitions": {
+    "AccountType": {
+      "enum": [
+        "business",
+        "personal"
+      ],
+      "description": "Filter based upon account type",
+      "type": "string"
+    }
+  }
+}

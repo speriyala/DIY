@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="928cdc48-7553-4d87-aba7-f3ac6bb296ae" >
+		<db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+	</db:config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="13cea4a8-b9df-4de0-92ca-c78ad6dde2bc" >
+		<file:connection workingDir="C:\Users\ADMIN\Desktop\database_write" />
+	</file:config>
+	<flow name="diy_12Flow" doc:id="3ccaef0b-e9f9-4cf9-bbb3-d0c0a259b690" >
+		<db:listener doc:name="On Table Row" doc:id="d5df777e-7b2c-42df-99a7-d45e0f4ca241" config-ref="Database_Config" table="flights_customers" watermarkColumn="accountID">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</db:listener>
+		<set-variable value="#['C:/Users/ADMIN/Desktop/database_write/' ++ dw::core::Strings::dasherize(payload.country as String) ++ now() as String {format: &quot;yyyyMMdd&quot;} ++ &quot;.csv&quot;]" doc:name="Set Variable" doc:id="68ad34c1-e2b2-4b99-875e-8558495a3cfd" variableName="fileName" />
+		<ee:transform doc:name="Transform Message" doc:id="3a9cd154-6bfb-4f2c-8106-12bcc0d0aeb5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv header=false
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write" doc:id="e0e5590f-98e1-4963-b664-eb23d48481f7" config-ref="File_Config" path="#[vars.fileName]" mode="APPEND"/>
+	</flow>
+<!-- [STUDIO:"diy_12Flow"]	<flow name="diy_12Flow" doc:id="7ef37de1-5604-46ff-a886-1857d9c81942" >
+		<scheduler doc:name="Scheduler" doc:id="05ee15a6-1eab-4a56-b556-f7e8a418e0bc" >
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</scheduler>
+		<db:select doc:name="Select" doc:id="89badf76-42a3-4a3b-8915-712a6e5437bd" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from flights_customers]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="dcc2bf9c-20b2-4d54-94d9-3a97046ee8a0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv header=false
+&#45;&#45;-
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="46f05483-e5c4-4c1c-bb35-8a0f6b58046a" message="payload"/>
+	</flow> [STUDIO] -->
+</mule>

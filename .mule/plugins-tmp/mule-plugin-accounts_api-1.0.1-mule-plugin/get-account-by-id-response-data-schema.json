@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/schema",
+  "definitions": {
+    "schema": {
+      "items": {
+        "$ref": "#/definitions/Account"
+      },
+      "type": "array",
+      "x-amf-examples": {
+        "output": [
+          {
+            "id": 1,
+            "name": "ACME",
+            "type": "business",
+            "address": "1 Main St,Los Angeles,CA,92000,USA",
+            "air_miles": 5000,
+            "created_at": "2020-09-21T12:00:00Z"
+          },
+          {
+            "id": 2,
+            "name": "Jane Doe",
+            "type": "personal",
+            "address": "1 Main St,Los Angeles,CA,92000,USA",
+            "air_miles": 50000,
+            "created_at": "2010-01-01T00:00:00Z"
+          }
+        ]
+      }
+    },
+    "Account": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "type",
+        "address",
+        "air_miles"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/type"
+        },
+        "address": {
+          "type": "string"
+        },
+        "air_miles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "business",
+        "personal"
+      ]
+    }
+  }
+}

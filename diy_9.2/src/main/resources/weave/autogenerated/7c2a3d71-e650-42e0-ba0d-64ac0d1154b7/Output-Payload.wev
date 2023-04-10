@@ -1,0 +1,33 @@
+%dw 2.0
+
+type auto_7c2a3d71_e650_42e0_ba0d_64ac0d1154b7_Output_Payload = {|
+  "0": org_mule_runtime_api_message_Message, 
+  "1": org_mule_runtime_api_message_Message_13
+|}
+type org_mule_runtime_api_message_Message_13 = {|
+  payload: Array<anonymousType_1>, 
+  attributes: org_mule_extension_http_api_HttpResponseAttributes
+|} {"typeId": "org.mule.runtime.api.message.Message"}
+type anonymousType_1 = {
+  address: String, 
+  air_miles: Number, 
+  name: String, 
+  created_at?: String, 
+  id?: Number, 
+  "type": "business" | "personal", 
+  _?: Any
+}
+
+
+type org_mule_extension_http_api_HttpResponseAttributes = org_mule_extension_http_api_HttpResponseAttributes
+
+
+
+
+type org_mule_runtime_api_message_Message = {|
+  payload: Array<{    address: String,     air_miles: Number,     name: String,     created_at?: String,     id?: Number,     "type": "business" | "personal",     _?: Any  }>, 
+  attributes: org_mule_extension_http_api_HttpResponseAttributes
+|} {"typeId": "org.mule.runtime.api.message.Message"}
+
+
+

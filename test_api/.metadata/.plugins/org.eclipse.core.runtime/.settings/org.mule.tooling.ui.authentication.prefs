@@ -1,0 +1,3 @@
+eclipse.preferences.version=1
+org.mule.tooling.amc.apps={"userProjectMap"\:{"speriyala"\:{"test_api"\:"{\\"applicationName\\"\:\\"test-api-speriyala\\",\\"muleRuntime\\"\:\\"4.4.0\\",\\"properties\\"\:{}}","test-api"\:"{\\"applicationName\\"\:\\"test-api2-speriyala\\",\\"muleRuntime\\"\:\\"4.4.0\\",\\"properties\\"\:{}}"}}}
+org.mule.tooling.ui.properties.enable.api.dependencies=true

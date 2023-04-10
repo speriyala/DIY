@@ -1,0 +1,86 @@
+#%RAML 1.0
+title: Accounts API
+
+traits:
+  client-id-required:
+    headers:
+      client_id:
+        type: string
+      client_secret:
+        type: string
+    responses:
+      401:
+        description: Unauthorized, The client_id or client_secret are not valid or the client does not have access.
+      429:
+        description: The client used all of its request quota for the current period.
+      500:
+        description: An error occurred, see the specific message (Only if it is a WSDL endpoint).
+      503:
+        description: Contracts Information Unreachable.
+
+types:
+  AccountType: !include datatypes/AccountType.raml
+  Account: !include datatypes/Account.raml
+
+/accounts:
+  is: [client-id-required]
+  get:
+    description: Retrieve a collection of accounts
+    headers:
+      user_id:
+    queryParameters:
+      account_type:
+        description: Filter based upon account type
+        type: AccountType
+        required: false
+      account_name:
+        description: Filter based upon the name
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: Account
+            examples:
+              output: !include examples/Accounts.raml
+  
+  /{ID}:
+      is: [client-id-required]
+      get:
+        description: Retrieve a collection of accounts
+        headers:
+          user_id:
+        queryParameters:
+          account_type:
+            description: Filter based upon account type
+            type: AccountType
+            required: false
+          account_name:
+            description: Filter based upon the name
+            required: false
+        responses:
+          200:
+            body:
+              application/json:
+                type: array
+                items: Account
+                examples:
+                  output: !include examples/Accounts.raml
+               
+  post:
+    description: Create accounts
+    headers:
+      user_id:
+    body:
+      application/json:
+        type: array
+        items: Account
+        examples:
+          input: !include examples/AccountsPost.raml
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              message: Accounts created

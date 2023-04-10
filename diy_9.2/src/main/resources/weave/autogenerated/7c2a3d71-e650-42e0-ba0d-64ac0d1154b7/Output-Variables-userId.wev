@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_7c2a3d71_e650_42e0_ba0d_64ac0d1154b7_Output_Variables_userId = String | Null
+

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="main-error-handler" doc:id="983ed788-00a0-481b-86ec-b606103a9774" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c07ecf77-5c33-4fba-be03-ab3a095c4e5d" type="APP:ACCOUNT_TYPE">
+			<ee:transform doc:name="Transform Message" doc:id="c2ab370e-34df-4326-86f9-dd0b553eaee2" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message" : error.description,
+	"account_type" : vars.custType
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<set-variable value="400" doc:name="httpStatus" doc:id="e32dccff-f3b9-476b-afa6-11fabbe7dc42" variableName="httpStatus"/>
+			<logger level="INFO" doc:name="Logger" doc:id="65856878-1d6a-4af8-8f1d-d68f63ed1299" message="payload"/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5ec956b3-fa53-49f2-bb6d-2d37a762db6a" type="APP:CONDITION">
+			<ee:transform doc:name="Transform Message" doc:id="67170e87-2c59-4bdc-ba72-e0898572e471" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message" : error.description,
+	"condition" : "invalid condition provided"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<set-variable value="400" doc:name="httpStatus" doc:id="e8d2934d-0e3b-44a0-887f-79cc211ed670" variableName="httpStatus" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8cf3392d-18e5-4ec7-91a9-ad6ec7401c25" type="ANY">
+			<ee:transform doc:name="Transform Message" doc:id="8cb4c2d6-2a17-41c1-b4fa-5d699ed057f3" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Please contact the application's admin/owner."
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>
